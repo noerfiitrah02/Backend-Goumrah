@@ -105,23 +105,22 @@ const getAllBlogCategories = async (req, res, next) => {
 
     const categories = await db.BlogCategory.findAll({
       where,
-      include: [
-        {
-          model: db.BlogPost,
-          as: "posts",
-          where: { status: "published" },
-          required: false,
-          attributes: ["id"],
-        },
-      ],
       attributes: [
         "id",
         "name",
         "slug",
-        [sequelize.fn("COUNT", sequelize.col("posts.id")), "postCount"],
-      ],
-      group: ["BlogCategory.id"],
+        [
+          sequelize.literal(`(
+            SELECT COUNT(*) 
+            FROM blog_posts 
+            WHERE blog_posts.category_id = BlogCategory.id 
+            AND blog_posts.status = 'published'
+          )`),
+          "postCount"
+        ]
+      ]
     });
+    
     res.status(200).json({ success: true, data: categories });
   } catch (error) {
     next(error);
