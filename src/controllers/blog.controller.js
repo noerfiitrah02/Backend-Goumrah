@@ -112,15 +112,15 @@ const getAllBlogCategories = async (req, res, next) => {
         [
           sequelize.literal(`(
             SELECT COUNT(*) 
-            FROM blog_posts 
-            WHERE blog_posts.category_id = BlogCategory.id 
-            AND blog_posts.status = 'published'
+            FROM blogPost 
+            WHERE blogPost.category_id = BlogCategory.id 
+            AND blogPost.status = 'published'
           )`),
-          "postCount"
-        ]
-      ]
+          "postCount",
+        ],
+      ],
     });
-    
+
     res.status(200).json({ success: true, data: categories });
   } catch (error) {
     next(error);
