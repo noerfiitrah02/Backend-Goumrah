@@ -474,10 +474,10 @@ const forgotPassword = async (req, res, next) => {
     }
 
     // Cari pengguna berdasarkan email
-    const emailUser = await db.User.findOne({ where: { email } });
+    const user = await db.User.findOne({ where: { email } });
 
     // jika email tidak ditemukan
-    if (!emailUser) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "Email tidak terdaftar",
@@ -500,7 +500,6 @@ const forgotPassword = async (req, res, next) => {
     next(error);
   }
 };
-
 // Fungsi untuk mereset password setelah verifikasi OTP
 const resetPassword = async (req, res, next) => {
   try {
