@@ -303,17 +303,6 @@ const updateTravelAgent = async (req, res, next) => {
       }
     }
 
-    // Cek apakah nomor telepon sudah terdaftar
-    const existingTravelAgent = await db.TravelAgent.findOne({
-      where: { phone_number },
-    });
-    if (existingTravelAgent) {
-      return res.status(400).json({
-        success: false,
-        message: "Nomor telepon sudah terdaftar",
-      });
-    }
-
     // Jika ada file logo baru yang di-upload
     if (req.file) {
       // Hapus file logo lama jika ada

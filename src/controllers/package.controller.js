@@ -446,16 +446,6 @@ const getPackage = async (req, res, next) => {
           attributes: ["id", "name"],
         },
         {
-          model: db.User,
-          as: "creator",
-          attributes: ["id", "name", "role"],
-        },
-        {
-          model: db.TravelAgent,
-          as: "travel", // ✅ This must match the alias
-          attributes: ["id", "travel_name", "phone_number", "email", "logo"],
-        },
-        {
           model: db.PackageImage,
           as: "images",
           attributes: ["id", "image_path", "caption"],
@@ -483,7 +473,6 @@ const getPackage = async (req, res, next) => {
                   model: db.HotelImage,
                   as: "images",
                   attributes: ["id", "image_path", "caption"],
-                  limit: 1,
                 },
               ],
             },
