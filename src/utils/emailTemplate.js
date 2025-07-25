@@ -6,9 +6,7 @@ const emailTemplates = {
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f7f7;">
         <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
           <div style="text-align: center;">
-            <img src="${
-              process.env.BASE_URL
-            }/uploads/assets/goumroh.jpg" alt="Goumroh Travel" style="width: 120px; margin-bottom: 20px;" />
+            <img src="https://res.cloudinary.com/dvi1wws65/image/upload/v1753431182/goumroh_aacolz.jpg" alt="Goumroh Travel" style="width: 120px; margin-bottom: 20px;" />
           </div>
           <h2 style="color: #333;">Verifikasi Email Anda</h2>
           <p style="font-size: 16px; color: #555;">Terima kasih telah memilih <strong>Goumroh Travel</strong>.</p>
@@ -31,9 +29,7 @@ const emailTemplates = {
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f7f7;">
         <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
           <div style="text-align: center;">
-            <img src="${
-              process.env.BASE_URL
-            }/uploads/assets/goumroh.jpg" alt="Goumroh" style="width: 120px; margin-bottom: 20px;" />
+            <img src="https://res.cloudinary.com/dvi1wws65/image/upload/v1753431182/goumroh_aacolz.jpg" alt="Goumroh" style="width: 120px; margin-bottom: 20px;" />
           </div>
           <h2 style="color: #333;">Reset Password Anda</h2>
           <p style="font-size: 16px; color: #555;">Halo <strong>${userName}</strong>,</p>
@@ -57,9 +53,7 @@ const emailTemplates = {
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f7f7;">
         <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
           <div style="text-align: center;">
-            <img src="${
-              process.env.BASE_URL
-            }/uploads/assets/goumroh.jpg" alt="Goumroh Travel" style="width: 120px; margin-bottom: 20px;" />
+            <img src="https://res.cloudinary.com/dvi1wws65/image/upload/v1753431182/goumroh_aacolz.jpg" alt="Goumroh Travel" style="width: 120px; margin-bottom: 20px;" />
           </div>
           <h2 style="color: #333;">Pendaftaran Travel Agent Baru</h2>
           <p style="font-size: 16px; color: #555;">Berikut detail pendaftaran travel agent baru:</p>
