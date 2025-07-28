@@ -374,37 +374,38 @@ const dashboardTravelAgent = async (req, res, next) => {
         },
       })) || 0;
 
-    // Ambil 5 paket terpopuler berdasarkan jumlah pesanan
+    // Ganti query popularPackages yang bermasalah dengan ini:
     const popularPackages = await db.Package.findAll({
-      attributes: {
-        include: [
-          [sequelize.fn("COUNT", sequelize.col("orders.id")), "order_count"],
-          [
-            sequelize.fn(
-              "SUM",
-              sequelize.literal(
-                `CASE WHEN \`orders\`.\`order_status\` = 'paid' THEN \`orders\`.\`total_price\` ELSE 0 END`
-              )
-            ),
-            "total_revenue",
-          ],
+      attributes: [
+        "id",
+        "name",
+        "price_double",
+        [sequelize.fn("COUNT", sequelize.col("orders.id")), "order_count"],
+        [
+          sequelize.fn(
+            "SUM",
+            sequelize.literal(
+              `CASE WHEN \`orders\`.\`order_status\` = 'paid' THEN \`orders\`.\`total_price\` ELSE 0 END`
+            )
+          ),
+          "total_revenue",
         ],
-      },
+      ],
       include: [
         {
           model: db.Order,
           as: "orders",
-          attributes: [],
-          required: false, // LEFT JOIN untuk menyertakan paket tanpa pesanan
+          attributes: [], // Kosong karena kita tidak butuh kolom dari orders
+          required: false, // LEFT JOIN
         },
       ],
       where: {
         created_by: travelAgentId,
       },
-      group: ["Package.id"],
-      order: [[db.sequelize.literal("order_count"), "DESC"]],
+      group: ["Package.id", "Package.name", "Package.price_double"], // Tambahkan semua kolom non-aggregate ke GROUP BY
+      order: [[sequelize.literal("order_count"), "DESC"]],
       limit: 5,
-      subQuery: false, // Diperlukan agar `limit` bekerja dengan benar pada query agregasi
+      subQuery: false,
     });
 
     // Kirim semua data dashboard travel agent sebagai respons
