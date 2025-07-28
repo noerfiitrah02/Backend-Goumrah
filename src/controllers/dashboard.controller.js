@@ -190,18 +190,24 @@ const dashboardTravelAgent = async (req, res, next) => {
       ],
     });
 
-    // Hitung total pendapatan dari paket milik travel agent
-    const totalRevenue =
-      (await db.Order.sum("total_price", {
-        include: [
-          {
-            model: db.Package,
-            as: "package",
-            where: { created_by: travelAgentId },
-          },
-        ],
-        where: { order_status: "paid" },
-      })) || 0;
+    // Hitung total pendapatan dari paket milik travel agent - FIXED
+    const totalRevenueResult = await db.Order.findOne({
+      attributes: [
+        [sequelize.fn("SUM", sequelize.col("Order.total_price")), "total"],
+      ],
+      include: [
+        {
+          model: db.Package,
+          as: "package",
+          where: { created_by: travelAgentId },
+          attributes: [], // Kosongkan attributes agar tidak ditambahkan ke SELECT
+        },
+      ],
+      where: { order_status: "paid" },
+      raw: true,
+    });
+
+    const totalRevenue = totalRevenueResult?.total || 0;
 
     // Hitung paket yang aktif (status 'published') milik travel agent
     const activePackages = await db.Package.count({
@@ -252,7 +258,7 @@ const dashboardTravelAgent = async (req, res, next) => {
           sequelize.fn("DATE_FORMAT", sequelize.col("Order.createdAt"), "%Y"),
           "year",
         ],
-        [sequelize.fn("SUM", sequelize.col("total_price")), "total"],
+        [sequelize.fn("SUM", sequelize.col("Order.total_price")), "total"],
       ],
       include: [
         {
@@ -282,7 +288,7 @@ const dashboardTravelAgent = async (req, res, next) => {
           ),
           "month",
         ],
-        [sequelize.fn("SUM", sequelize.col("total_price")), "total"],
+        [sequelize.fn("SUM", sequelize.col("Order.total_price")), "total"],
       ],
       include: [
         {
@@ -356,25 +362,32 @@ const dashboardTravelAgent = async (req, res, next) => {
       },
     });
 
-    const revenueThisMonth =
-      (await db.Order.sum("total_price", {
-        include: [
-          {
-            model: db.Package,
-            as: "package",
-            where: { created_by: travelAgentId },
-          },
-        ],
-        where: {
-          order_status: "paid",
-          createdAt: {
-            [Op.gte]: new Date(currentYear, currentMonth - 1, 1),
-            [Op.lt]: new Date(currentYear, currentMonth, 1),
-          },
+    // Hitung pendapatan bulan ini - FIXED
+    const revenueThisMonthResult = await db.Order.findOne({
+      attributes: [
+        [sequelize.fn("SUM", sequelize.col("Order.total_price")), "total"],
+      ],
+      include: [
+        {
+          model: db.Package,
+          as: "package",
+          where: { created_by: travelAgentId },
+          attributes: [], // Kosongkan attributes
         },
-      })) || 0;
+      ],
+      where: {
+        order_status: "paid",
+        createdAt: {
+          [Op.gte]: new Date(currentYear, currentMonth - 1, 1),
+          [Op.lt]: new Date(currentYear, currentMonth, 1),
+        },
+      },
+      raw: true,
+    });
 
-    // Ganti query popularPackages yang bermasalah dengan ini:
+    const revenueThisMonth = revenueThisMonthResult?.total || 0;
+
+    // Ambil 5 paket terpopuler berdasarkan jumlah pesanan - FIXED
     const popularPackages = await db.Package.findAll({
       attributes: [
         "id",
@@ -396,7 +409,7 @@ const dashboardTravelAgent = async (req, res, next) => {
           model: db.Order,
           as: "orders",
           attributes: [], // Kosong karena kita tidak butuh kolom dari orders
-          required: false, // LEFT JOIN
+          required: false, // LEFT JOIN untuk menyertakan paket tanpa pesanan
         },
       ],
       where: {
@@ -405,7 +418,7 @@ const dashboardTravelAgent = async (req, res, next) => {
       group: ["Package.id", "Package.name", "Package.price_double"], // Tambahkan semua kolom non-aggregate ke GROUP BY
       order: [[sequelize.literal("order_count"), "DESC"]],
       limit: 5,
-      subQuery: false,
+      subQuery: false, // Diperlukan agar `limit` bekerja dengan benar pada query agregasi
     });
 
     // Kirim semua data dashboard travel agent sebagai respons
@@ -414,11 +427,11 @@ const dashboardTravelAgent = async (req, res, next) => {
       data: {
         totalPackages,
         totalOrders,
-        totalRevenue,
+        totalRevenue: parseFloat(totalRevenue), // Konversi ke number
         activePackages,
         conversionRate,
         ordersThisMonth,
-        revenueThisMonth,
+        revenueThisMonth: parseFloat(revenueThisMonth), // Konversi ke number
         orderStatus,
         yearlyRevenue,
         monthlyRevenue: formattedMonthlyRevenue,
