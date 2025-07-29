@@ -36,9 +36,9 @@ router.get(
 );
 
 router.get("/featured", getFeaturedPackages);
-router.get("/:id", getPackage);
 router.get("/popular", getPopularPackages);
 router.get("/travel/:travelId", getAllPackagesByTravelId);
+router.get("/:id", getPackage);
 router.post(
   "/:id/image",
   authMiddleware,

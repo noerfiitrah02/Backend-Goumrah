@@ -532,7 +532,7 @@ const getPopularPackages = async (req, res, next) => {
           model: db.PackageImage,
           as: "images",
           attributes: ["id", "image_path", "caption"],
-          limit: 1,
+          limit: 6,
         },
         {
           model: db.PackageHotel,
