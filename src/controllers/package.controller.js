@@ -503,6 +503,7 @@ const getPackage = async (req, res, next) => {
 
 // fungsi untuk mendapatkan paket populer
 // Fungsi untuk mendapatkan paket populer - FIXED VERSION
+// Fungsi untuk mendapatkan paket populer - FIXED VERSION (Safer approach)
 const getPopularPackages = async (req, res, next) => {
   try {
     // Query untuk mendapatkan package dengan jumlah order terbanyak
@@ -528,12 +529,25 @@ const getPopularPackages = async (req, res, next) => {
       ],
       group: ["Package.id"], // Hanya group by Package.id
       order: [[db.sequelize.literal("order_count"), "DESC"]],
-      limit: 6, // Ambil lebih banyak untuk kemudian di-include relasi
+      limit: 6,
       subQuery: false,
     });
 
-    // Ambil ID packages yang sudah diurutkan
-    const packageIds = packages.map((pkg) => pkg.id);
+    // Jika tidak ada packages, return empty array
+    if (packages.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Ambil ID packages yang sudah diurutkan dengan order_count
+    const packageIdsWithCount = packages.map((pkg) => ({
+      id: pkg.id,
+      order_count: pkg.dataValues.order_count,
+    }));
+
+    const packageIds = packageIdsWithCount.map((item) => item.id);
 
     // Query terpisah untuk mendapatkan detail lengkap packages
     const detailedPackages = await db.Package.findAll({
@@ -552,7 +566,7 @@ const getPopularPackages = async (req, res, next) => {
           model: db.PackageImage,
           as: "images",
           attributes: ["id", "image_path", "caption"],
-          limit: 6,
+          limit: 1,
         },
         {
           model: db.PackageHotel,
@@ -566,20 +580,21 @@ const getPopularPackages = async (req, res, next) => {
           ],
         },
       ],
-      order: [
-        // Urutkan sesuai dengan urutan packageIds
-        db.sequelize.literal(`FIELD(Package.id, ${packageIds.join(",")})`),
-      ],
     });
 
-    // Tambahkan order_count ke detailed packages
-    const result = detailedPackages.map((pkg) => {
-      const originalPkg = packages.find((p) => p.id === pkg.id);
-      return {
-        ...pkg.toJSON(),
-        order_count: originalPkg ? originalPkg.dataValues.order_count : 0,
-      };
-    });
+    // Manual sorting berdasarkan urutan popularity dan tambahkan order_count
+    const result = packageIdsWithCount
+      .map((item) => {
+        const pkg = detailedPackages.find((p) => p.id === item.id);
+        if (pkg) {
+          return {
+            ...pkg.toJSON(),
+            order_count: parseInt(item.order_count) || 0,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
 
     res.status(200).json({
       success: true,
