@@ -502,8 +502,10 @@ const getPackage = async (req, res, next) => {
 };
 
 // fungsi untuk mendapatkan paket populer
+// Fungsi untuk mendapatkan paket populer - FIXED VERSION
 const getPopularPackages = async (req, res, next) => {
   try {
+    // Query untuk mendapatkan package dengan jumlah order terbanyak
     const packages = await db.Package.findAll({
       where: {
         status: "published",
@@ -520,9 +522,27 @@ const getPopularPackages = async (req, res, next) => {
         {
           model: db.Order,
           as: "orders",
-          attributes: [],
+          attributes: [], // Kosongkan attributes untuk menghindari konflik GROUP BY
           required: false, // LEFT JOIN
         },
+      ],
+      group: ["Package.id"], // Hanya group by Package.id
+      order: [[db.sequelize.literal("order_count"), "DESC"]],
+      limit: 6, // Ambil lebih banyak untuk kemudian di-include relasi
+      subQuery: false,
+    });
+
+    // Ambil ID packages yang sudah diurutkan
+    const packageIds = packages.map((pkg) => pkg.id);
+
+    // Query terpisah untuk mendapatkan detail lengkap packages
+    const detailedPackages = await db.Package.findAll({
+      where: {
+        id: {
+          [Op.in]: packageIds,
+        },
+      },
+      include: [
         {
           model: db.PackageCategory,
           as: "category",
@@ -546,15 +566,24 @@ const getPopularPackages = async (req, res, next) => {
           ],
         },
       ],
-      group: ["Package.id"],
-      order: [[db.sequelize.literal("order_count"), "DESC"]],
-      limit: 1,
-      subQuery: false,
+      order: [
+        // Urutkan sesuai dengan urutan packageIds
+        db.sequelize.literal(`FIELD(Package.id, ${packageIds.join(",")})`),
+      ],
+    });
+
+    // Tambahkan order_count ke detailed packages
+    const result = detailedPackages.map((pkg) => {
+      const originalPkg = packages.find((p) => p.id === pkg.id);
+      return {
+        ...pkg.toJSON(),
+        order_count: originalPkg ? originalPkg.dataValues.order_count : 0,
+      };
     });
 
     res.status(200).json({
       success: true,
-      data: packages,
+      data: result,
     });
   } catch (error) {
     next(error);
