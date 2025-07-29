@@ -9,6 +9,7 @@ const {
   getAllPackages,
   getMyPackages,
   getFeaturedPackages,
+  getPopularPackages,
   getPackage,
   updatePackage,
   updatePackageStatus,
@@ -36,6 +37,7 @@ router.get(
 
 router.get("/featured", getFeaturedPackages);
 router.get("/:id", getPackage);
+router.get("/popular", getPopularPackages);
 router.get("/travel/:travelId", getAllPackagesByTravelId);
 router.post(
   "/:id/image",

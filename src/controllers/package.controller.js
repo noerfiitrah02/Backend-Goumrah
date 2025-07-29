@@ -501,6 +501,66 @@ const getPackage = async (req, res, next) => {
   }
 };
 
+// fungsi untuk mendapatkan paket populer
+const getPopularPackages = async (req, res, next) => {
+  try {
+    const packages = await db.Package.findAll({
+      where: {
+        status: "published",
+      },
+      attributes: {
+        include: [
+          [
+            db.sequelize.fn("COUNT", db.sequelize.col("orders.id")),
+            "order_count",
+          ],
+        ],
+      },
+      include: [
+        {
+          model: db.Order,
+          as: "orders",
+          attributes: [],
+          required: false, // LEFT JOIN
+        },
+        {
+          model: db.PackageCategory,
+          as: "category",
+          attributes: ["id", "name"],
+        },
+        {
+          model: db.PackageImage,
+          as: "images",
+          attributes: ["id", "image_path", "caption"],
+          limit: 1,
+        },
+        {
+          model: db.PackageHotel,
+          as: "hotels",
+          include: [
+            {
+              model: db.Hotel,
+              as: "hotel",
+              attributes: ["id", "name", "stars"],
+            },
+          ],
+        },
+      ],
+      group: ["Package.id"],
+      order: [[db.sequelize.literal("order_count"), "DESC"]],
+      limit: 1,
+      subQuery: false,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: packages,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getAllPackagesByTravelId = async (req, res, next) => {
   try {
     const { travelId } = req.params;
@@ -984,6 +1044,7 @@ module.exports = {
   getMyPackages,
   getFeaturedPackages,
   getPackage,
+  getPopularPackages,
   getAllPackagesByTravelId,
   updatePackage,
   updatePackageStatus,
