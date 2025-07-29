@@ -501,9 +501,6 @@ const getPackage = async (req, res, next) => {
   }
 };
 
-// fungsi untuk mendapatkan paket populer
-// Fungsi untuk mendapatkan paket populer - FIXED VERSION
-// Fungsi untuk mendapatkan paket populer - FIXED VERSION (Safer approach)
 const getPopularPackages = async (req, res, next) => {
   try {
     // Query untuk mendapatkan package dengan jumlah order terbanyak
@@ -529,7 +526,7 @@ const getPopularPackages = async (req, res, next) => {
       ],
       group: ["Package.id"], // Hanya group by Package.id
       order: [[db.sequelize.literal("order_count"), "DESC"]],
-      limit: 6,
+      limit: 1,
       subQuery: false,
     });
 
