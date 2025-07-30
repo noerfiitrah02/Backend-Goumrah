@@ -32,12 +32,7 @@ router.get(
   roleMiddleware(["admin", "travel_agent"]),
   getAllOrders
 );
-router.put(
-  "/:id/status",
-  authMiddleware,
-  roleMiddleware(["admin", "travel_agent"]),
-  updateOrderStatus
-);
+router.put("/:id/status", authMiddleware, updateOrderStatus);
 router.delete("/:id", authMiddleware, roleMiddleware(["admin"]), deleteOrder);
 
 module.exports = router;

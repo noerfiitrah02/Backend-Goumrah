@@ -210,14 +210,6 @@ const getOrder = async (req, res, next) => {
         .json({ success: false, message: "Order tidak ditemukan" });
     }
 
-    // Cek otorisasi: hanya admin/travel agent yang bisa melihat detail pesanan ini
-    if (req.user.role === "user") {
-      return res.status(403).json({
-        success: false,
-        message: "Tidak diperbolehkan mengakses order ini",
-      });
-    }
-
     res.json({ success: true, data: order });
   } catch (error) {
     next(error);
@@ -376,7 +368,6 @@ const getUserOrders = async (req, res, next) => {
     next(error);
   }
 };
-
 
 module.exports = {
   createOrder,
