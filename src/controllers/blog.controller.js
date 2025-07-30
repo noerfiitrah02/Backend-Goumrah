@@ -356,7 +356,6 @@ const getFeaturedBlogPosts = async (req, res, next) => {
           through: { attributes: [] },
         },
       ],
-      limit: 4,
       order: [["published_at", "DESC"]],
     });
     res.status(200).json({ success: true, data: posts });

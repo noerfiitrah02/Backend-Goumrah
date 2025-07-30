@@ -483,6 +483,11 @@ const getPackage = async (req, res, next) => {
           as: "itineraries",
           attributes: ["id", "day", "title", "description", "location"],
         },
+        {
+          model: db.User,
+          as: "creator",
+          attributes: ["id", "name"],
+        },
       ],
     });
 
@@ -520,8 +525,8 @@ const getPopularPackages = async (req, res, next) => {
         {
           model: db.Order,
           as: "orders",
-          attributes: [], // Kosongkan attributes untuk menghindari konflik GROUP BY
-          required: false, // LEFT JOIN
+          attributes: [],
+          required: false,
         },
       ],
       group: ["Package.id"], // Hanya group by Package.id
@@ -563,7 +568,6 @@ const getPopularPackages = async (req, res, next) => {
           model: db.PackageImage,
           as: "images",
           attributes: ["id", "image_path", "caption"],
-          limit: 1,
         },
         {
           model: db.PackageHotel,
